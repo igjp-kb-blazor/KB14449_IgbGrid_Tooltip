@@ -1,0 +1,65 @@
+﻿<div style="max-width: 800px; margin: auto; padding: 24px; display: flex; flex-direction: column; gap: 24px;">
+    <IgbGrid Data="_people"
+             PrimaryKey="@nameof(Person.Id)"
+             AutoGenerate="false">
+        @*
+        BodyTemplate を使って、セルにカーソルを合わせるとカスタムされたツールチップが表示されます。
+        *@
+        <IgbColumn Field="@nameof(Person.Name)" Header="BodyTemplate" Width="30%">
+            <BodyTemplate>
+                @{
+                    var description = GetDescription(context);
+                }
+                <span title="@description">
+                    @context.Cell.Value
+                </span>
+            </BodyTemplate>
+        </IgbColumn>
+
+        @*
+        BodyTemplateScript を使って、wwwroot/script.js 内で定義された JavaScript によってカスタムされたツールチップを表示します
+        *@
+        <IgbColumn Field="@nameof(Person.Name)"
+                   Header="BodyTemplateScript"
+                   BodyTemplateScript="descriptionTemplate" 
+                   Width="35%">
+        </IgbColumn>
+        <IgbColumn Field="@nameof(Person.Age)" Header="年齢" DataType="GridColumnDataType.Number" Width="15%"></IgbColumn>
+        <IgbColumn Field="@nameof(Person.JobTitle)" Header="職種" Width="20%"></IgbColumn>
+    </IgbGrid>
+</div>
+
+@code {
+    public class Person
+    {
+        public int Id { get; set; }
+        public string? Name { get; set; }
+        public int Age { get; set; }
+        public string? JobTitle { get; set; }
+        public string? Description => $"{Name} さんの年齢は {Age} 歳で職種は {JobTitle} です。";
+    }
+
+    private List<Person> _people = new()
+    {
+        new() { Id = 1, Name = "Bob", Age = 30, JobTitle = "Developer" },
+        new() { Id = 2, Name = "Alice", Age = 25, JobTitle = "Support" },
+        new() { Id = 3, Name = "John", Age = 40, JobTitle = "Manager" },
+        new() { Id = 4, Name = "Emily", Age = 35, JobTitle = "Marketing" },
+        new() { Id = 5, Name = "David", Age = 28, JobTitle = "Sales" }
+    };
+
+    private string GetDescription(IgbCellTemplateContext context)
+    {
+        // context.Parent を IgbGrid にキャストして、親グリッドを取得します
+        var grid = context.Parent as IgbGrid;
+        // グリッドのデータをPersonのリストとして取得します
+        var rows = grid?.Data as List<Person>;
+        // 現在のセルの RowID を取得し、整数に変換します
+        var rowId = int.Parse(context.Cell.Id.RowID);
+        // 指定した ID を持つ行をリストから検索します
+        var row = rows?.First(r => r.Id == rowId);
+        // 行が見つかった場合はその説明を返し、見つからなかった場合は"No Description"を返します
+        return row?.Description ?? "No Description";
+    }
+
+}
